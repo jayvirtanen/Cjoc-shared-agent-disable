@@ -1,4 +1,5 @@
 from email import header
+from platform import release
 from wsgiref import headers
 import requests
 import json
@@ -32,9 +33,14 @@ try:
         for jobs in response.json()['jobs']:
                 if (response.json()['jobs'][i]['_class'] == "com.cloudbees.opscenter.server.model.SharedSlave"):
                         AgentName =  (response.json()['jobs'][i]['name'])
+                        print("releasing " + AgentName)
+                        releasePost = requests.post(jenkins_url + '/cjoc/job/' + AgentName + '/doForceRelease', headers= header, auth=HTTPBasicAuth(username, apiToken), verify=False)
+                        if(releasePost.status_code == 200):
+                            print(AgentName + " leases released successfully")
                         print("disabling " + AgentName)
-                        post = requests.post(jenkins_url + '/cjoc/job/' + AgentName + '/disable', headers= header, verify=False, auth=HTTPBasicAuth(username, apiToken))
-                        print(post.status_code)
+                        disablePost = requests.post(jenkins_url + '/cjoc/job/' + AgentName + '/disable', headers= header , auth=HTTPBasicAuth(username, apiToken), verify=False)
+                        if(disablePost.status_code == 200):
+                            print(AgentName + " disabled successfully")
                 i=i+1
     else:
         print ("Invalid credentials")
